@@ -1,8 +1,11 @@
 // Funcionalidad para la página de Lectura Guiada
 document.addEventListener('DOMContentLoaded', function() {
-    // Configurar endpoint del chat: en producción use /api/chat detrás de proxy; en desarrollo usa localhost:5050
+    // Configurar endpoint del chat: auto-prod Render o localhost en dev
     if (!window.CHAT_API_URL) {
-        window.CHAT_API_URL = 'http://localhost:5050/api/chat';
+        const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        window.CHAT_API_URL = isLocal
+            ? 'http://localhost:5050/api/chat'
+            : 'https://ekggo.onrender.com/api/chat';
     }
     // Verificar si estamos en la página de lectura guiada
     const generarInformeBtn = document.getElementById('generarInforme');
