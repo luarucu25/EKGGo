@@ -278,6 +278,9 @@ function generarSospechaECG() {
     if (!isNaN(qrs) && qrs >= 120) addPick('Hiperkalemia probable', 1, 'QRS ancho');
     if (tAplanada) addPick('Hipokalemia probable', 3, 'T aplanada');
     if (stDescendido) addPick('Hipokalemia probable', 1, 'ST descendido');
+    // Pericarditis: ST difuso y/o PR deprimido
+    if (has('crit_st_difuso')) addPick('Pericarditis aguda probable', 4, 'ST elevado difuso');
+    if (has('crit_pr_deprimido')) addPick('Pericarditis aguda probable', 3, 'PR deprimido');
     // Onda U por checkbox
     if (has('crit_onda_u')) addPick('Hipokalemia probable', 3, 'Onda U');
 
@@ -288,8 +291,8 @@ function generarSospechaECG() {
 
     // WPW y AV blocks por checkboxes
     if (has('crit_pr_corto') || has('crit_onda_delta')) addPick('Preexcitación (WPW) probable', 4, 'PR corto/onda delta');
-    if (has('crit_pr_progresivo') && has('crit_p_no_conducida')) addPick('AV 2° Mobitz I (Wenckebach) probable', 4, 'PR progresivo + P no conducida');
-    if (has('crit_pr_constante') && has('crit_p_no_conducida')) addPick('AV 2° Mobitz II probable', 4, 'PR constante + P no conducida');
+    if (has('crit_pr_progresivo')) addPick('AV 2° Mobitz I (Wenckebach) probable', 4, 'PR progresivo con P no conducida');
+    if (has('crit_pr_constante')) addPick('AV 2° Mobitz II probable', 4, 'PR constante con P no conducida');
     if (has('crit_disociacion_av')) addPick('Bloqueo AV completo (3er grado)', 5, 'Disociación AV');
 
     // Checkboxes opcionales (sumar puntuación y razones)
@@ -302,13 +305,14 @@ function generarSospechaECG() {
     if (has('crit_v6_r_ancha')) addPick('Bloqueo de rama izquierda (BRI) probable', 2, 'V6 R alta ancha');
     if (has('crit_qrs_ancho')) addPick('Bloqueo de rama (QRS ≥120 ms)', 2, 'QRS ancho');
     if (has('crit_disociacion_av')) addPick('Bloqueo AV completo (3er grado)', 5, 'Disociación AV');
-    if (has('crit_pr_progresivo') && has('crit_p_no_conducida')) addPick('AV 2° Mobitz I (Wenckebach) probable', 4, 'PR progresivo + P no conducida');
-    if (has('crit_pr_constante') && has('crit_p_no_conducida')) addPick('AV 2° Mobitz II probable', 4, 'PR constante + P no conducida');
+    if (has('crit_pr_progresivo')) addPick('AV 2° Mobitz I (Wenckebach) probable', 4, 'PR progresivo con P no conducida');
+    if (has('crit_pr_constante')) addPick('AV 2° Mobitz II probable', 4, 'PR constante con P no conducida');
     if (has('crit_capturas_ventriculares')) addPick('Taquicardia ventricular (TV) probable', 4, 'Capturas ventriculares');
     if (has('crit_fusion')) addPick('Taquicardia ventricular (TV) probable', 4, 'Latidos de fusión');
     if (has('crit_concordancia_precordial')) addPick('Taquicardia ventricular (TV) probable', 3, 'Concordancia precordial');
     if (has('crit_brugada')) addPick('Síndrome de Brugada (patrón tipo 1/2)', 3, 'Elevación ST V1–V3');
     if (has('crit_wellens')) addPick('Signo de Wellens (estenosis DA)', 3, 'T negativa profunda V2–V3');
+    if (has('crit_st_dep_global')) addPick('Isquemia subendocárdica / NSTEMI', 3, 'ST descendido global');
     if (has('crit_hvi')) addPick('Hipertrofia ventricular izquierda (HVI)', 2, 'Voltaje alto (Sokolow-Lyon)');
     if (has('crit_onda_delta')) addPick('Preexcitación (WPW) probable', 3, 'Onda delta');
     if (has('crit_st_concordante_bri')) addPick('Infarto con elevación del ST (STEMI)', 5, 'ST concordante en BRI');
