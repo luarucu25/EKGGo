@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat EKG-LA</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=la1">
+    <link rel="stylesheet" href="styles.css?v=la1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script>
     // Configura explícitamente el endpoint del backend cuando se abre chat.html directo
     window.CHAT_API_URL = 'https://ekggo.onrender.com/api/chat';
@@ -35,17 +36,17 @@
       <div class="mac-controls">
         <span id="chatClose" class="mac-dot close" title="Cerrar"></span>
       </div>
-      <h6 class="mb-0">💬 Chat EKG-LA</h6>
+      <h6 class="mb-0"><i class="bi bi-cpu me-1"></i> IA-EKG-LA</h6>
       <p class="mb-0" style="font-size: 0.85rem;">Tu asistente para dudas sobre ECG <span id="statusBadge" class="badge bg-secondary ms-2" style="font-size: 0.75rem;">Verificando…</span></p>
     </div>
 
     <div id="chat-box" class="chat-box">
       <div class="bot-msg"><b>Asistente:</b> Hola,<br>Bienvenido a EKG-LA, una plataforma de LatidoAsistido, ¿en qué puedo ayudarte hoy? ¿Tienes alguna pregunta o inquietud relacionada con electrocardiografía? Estoy aquí para brindarte información y apoyo de manera clara y profesional.</div>
-      <div class="bot-msg"><b>Asistente:</b> ¿Quieres contactar con el Dr. Luis Angle Rueda Cuervo?</div>
-      <div>
-        <button type="button" id="linkWhatsapp" class="btn btn-outline-secondary btn-sm mt-1">WhatsApp</button>
-        <button type="button" id="linkWeb" class="btn btn-outline-secondary btn-sm mt-1 ms-1">Página web</button>
-        <button type="button" id="linkInstagram" class="btn btn-outline-secondary btn-sm mt-1 ms-1">Instagram</button>
+      <div class="bot-msg"><b>Asistente:</b> ¿Quieres contactar con el Dr. Luis Ángel Rueda Cuervo?</div>
+      <div class="mt-1">
+        <a href="https://wa.me/573508956163" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp" class="mx-1" style="font-size:1.4rem; text-decoration:none;"><i class="bi bi-whatsapp"></i></a>
+        <a href="https://latidoasistido.wixsite.com/lav1" target="_blank" rel="noopener" aria-label="Página web" title="Página web" class="mx-1" style="font-size:1.4rem; text-decoration:none;"><i class="bi bi-globe2"></i></a>
+        <a href="https://www.instagram.com/latidoasistido/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram" class="mx-1" style="font-size:1.4rem; text-decoration:none;"><i class="bi bi-instagram"></i></a>
       </div>
     </div>
 
@@ -85,7 +86,7 @@
       const mensaje = (input.value || '').trim();
       if (!mensaje) return;
 
-      chatBox.innerHTML += `<div class='user-msg'><b>Tú:</b> ${mensaje}</div>`;
+      chatBox.insertAdjacentHTML('beforeend', `<div class='user-msg'><b>Tú:</b> ${mensaje}</div>`);
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -98,33 +99,20 @@
         });
         if (!response.ok) {
           const errText = await response.text();
-          chatBox.innerHTML += `<div class='bot-msg'><b>Asistente:</b> Error ${response.status}. Detalle: ${errText || 'sin detalle'}</div>`;
+          chatBox.insertAdjacentHTML('beforeend', `<div class='bot-msg'><b>Asistente:</b> Error ${response.status}. Detalle: ${errText || 'sin detalle'}</div>`);
         } else {
           const data = await response.json();
           const respuesta = data.reply || 'Lo siento, no pude generar una respuesta. Inténtalo nuevamente.';
-          chatBox.innerHTML += `<div class='bot-msg'><b>Asistente:</b> ${respuesta}</div>`;
+          chatBox.insertAdjacentHTML('beforeend', `<div class='bot-msg'><b>Asistente:</b> ${respuesta}</div>`);
         }
         chatBox.scrollTop = chatBox.scrollHeight;
       } catch (e) {
         const detail = (e && e.message) ? ' (' + e.message + ')' : '';
-        chatBox.innerHTML += `<div class='bot-msg'><b>Asistente:</b> Hubo un problema de conexión con el servicio${detail}. Verifique que el backend /api/chat esté accesible.</div>`;
+        chatBox.insertAdjacentHTML('beforeend', `<div class='bot-msg'><b>Asistente:</b> Hubo un problema de conexión con el servicio${detail}. Verifique que el backend /api/chat esté accesible.</div>`);
       }
     }
     document.getElementById('btnEnviar').addEventListener('click', enviarMensaje);
-    // Botón de WhatsApp
-    document.getElementById('linkWhatsapp').addEventListener('click', function(){
-      const url = 'https://wa.me/573508956163';
-      window.open(url, '_blank', 'noopener');
-    });
-    // Enlaces de contacto
-    document.getElementById('linkWeb').addEventListener('click', function(){
-      const url = 'https://latidoasistido.wixsite.com/my-site-1';
-      window.open(url, '_blank', 'noopener');
-    });
-    document.getElementById('linkInstagram').addEventListener('click', function(){
-      const url = 'https://www.instagram.com/latidoasistido?igsh=MXJwcG8ybmM1ZWdvYw%3D%3D&utm_source=qr';
-      window.open(url, '_blank', 'noopener');
-    });
+    // Enlaces de contacto: ahora son anchors con href, no requieren listeners
     document.getElementById('mensaje').addEventListener('keypress', function(e){ if (e.key === 'Enter') enviarMensaje(); });
     document.addEventListener('DOMContentLoaded', checkHealth);
 
@@ -141,5 +129,18 @@
       }
     });
   </script>
+  <footer class="container my-3">
+    <div class="text-center" style="margin-bottom:8px;">
+        <a href="https://latidoasistido.wixsite.com/lav1" target="_blank" rel="noopener" aria-label="Página web" title="Página web" class="mx-2" style="font-size:1.4rem; text-decoration:none;"><i class="bi bi-globe2"></i></a>
+        <a href="https://www.instagram.com/latidoasistido/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram" class="mx-2" style="font-size:1.4rem; text-decoration:none;"><i class="bi bi-instagram"></i></a>
+        <a href="https://wa.me/573508956163" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp" class="mx-2" style="font-size:1.4rem; text-decoration:none;"><i class="bi bi-whatsapp"></i></a>
+    </div>
+    <div class="text-center my-2 la-footer-brand">
+        <span class="small text-muted">Una plataforma de Latido Asistido</span>
+    </div>
+    <div class="text-center text-muted small">
+      Contenido educativo — No sustituye evaluación clínica. Autor: Dr. Luis Ángel Rueda Cuervo.
+    </div>
+  </footer>
 </body>
 </html>

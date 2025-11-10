@@ -48,6 +48,19 @@ body {
 }
 .navbar.ao-topbar .nav-link { transition: color .12s ease, transform .12s ease; }
 
+/* Logo en navbar: tamaño escritorio y escala móvil */
+.la-navbar-logo img {
+  width: 2cm;
+  height: 2cm;
+  object-fit: contain;
+}
+@media (max-width: 576px) {
+  .la-navbar-logo img {
+    width: 48px;
+    height: 48px;
+  }
+}
+
 /* Hero */
 .ao-hero {
   background: linear-gradient(135deg, rgba(113,12,4,0.10), rgba(178,31,19,0.10));
@@ -247,6 +260,20 @@ body {
   font-weight: 700;
 }
 .form-check-label [data-bs-toggle="tooltip"]:hover { border-color: #222222; }
+
+/* Logo del footer: tamaño de escritorio y escala móvil */
+.la-footer-brand img {
+  width: 2cm;
+  height: 2cm;
+  object-fit: contain;
+}
+
+@media (max-width: 576px) {
+  .la-footer-brand img {
+    width: 48px;
+    height: 48px;
+  }
+}
 
 /* Controles estilo macOS para el chat */
 .mac-controls { position: absolute; left: 8px; top: 8px; display: flex; gap: 6px; z-index: 2; }

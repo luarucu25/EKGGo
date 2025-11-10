@@ -83,14 +83,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggle = document.createElement('button');
     toggle.className = 'chat-widget-toggle';
     toggle.type = 'button';
-    toggle.setAttribute('aria-label', 'Abrir Chat EKG-LA');
-    toggle.textContent = 'Chat EKG-LA';
+    toggle.setAttribute('aria-label', 'Chatea con la IA de EKG-LA');
+    toggle.textContent = 'Chatea con la IA de EKG-LA';
 
     const panel = document.createElement('div');
     panel.className = 'chat-widget-panel';
     const iframe = document.createElement('iframe');
     iframe.src = 'chat.html';
-    iframe.title = 'Chat EKG-LA';
+    iframe.title = 'IA-EKG-LA';
     panel.appendChild(iframe);
 
     document.body.appendChild(toggle);
