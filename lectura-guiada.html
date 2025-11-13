@@ -58,6 +58,16 @@
                             <option value="No sinusal">No sinusal</option>
                         </select>
                         <small class="form-text text-muted">Ritmo sinusal: onda P positiva en DII, relación P-QRS 1:1, frecuencia regular. (seleccione: Sinusal o No sinusal)</small>
+                        <div class="d-flex gap-3 mt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rr_regular">
+                                <label class="form-check-label" for="rr_regular">RR regular</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rr_irregular">
+                                <label class="form-check-label" for="rr_irregular">RR irregular</label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -82,6 +92,13 @@
                         <label for="pr" class="form-label">Intervalo PR (ms)</label>
                         <input type="number" class="form-control" id="pr" min="80" max="400">
                         <small class="form-text text-muted">Normal: 120–200 ms. Medir desde el inicio de la onda P hasta el inicio del QRS. (Respuesta: Solo escriba el número de milisegundos)</small>
+                        <div class="row g-2 mt-2">
+                            <div class="col-md-12">
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_disociacion_av"><label class="form-check-label" for="crit_disociacion_av">Disociación AV (BAV completo) <span class="ms-1" data-bs-toggle="tooltip" title="P y QRS sin relación fija; marcapasos ventricular.">ℹ️</span></label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_pr_progresivo"><label class="form-check-label" for="crit_pr_progresivo">PR progresivo (Mobitz I), con una P que no conduce <span class="ms-1" data-bs-toggle="tooltip" title="Wenckebach: PR se alarga hasta bloqueo.">ℹ️</span></label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_pr_constante"><label class="form-check-label" for="crit_pr_constante">PR constante (Mobitz II), con una P que no conduce <span class="ms-1" data-bs-toggle="tooltip" title="PR fijo con P no conducida; más grave.">ℹ️</span></label></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -91,10 +108,13 @@
                             <option value="Normal">Normal</option>
                             <option value="Aumentada en duración">Aumentada en duración (P mitral)</option>
                             <option value="Aumentada en voltaje">Aumentada en voltaje (P pulmonar)</option>
-                            <option value="Bifásica">Bifásica</option>
                             <option value="Ausente">Ausente</option>
                         </select>
                         <small class="form-text text-muted">Normal: duración &lt;120 ms, amplitud &lt;2.5 mm en derivaciones frontales. P mitral: aumento de duración; P pulmonar: aumento de voltaje.</small>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="ondas_f_sierra">
+                            <label class="form-check-label" for="ondas_f_sierra">Ondas F (sierra) <span class="ms-1" data-bs-toggle="tooltip" title="Marcador de Flutter auricular.">ℹ️</span></label>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -105,8 +125,13 @@
 
                     <div class="mb-3">
                         <label for="st" class="form-label">Segmento ST</label>
-                        <input type="text" class="form-control" id="st">
-                        <small class="form-text text-muted">Debe ser isoeléctrico; elevación o depresión sugiere isquemia o lesión. (Consignar: texto breve — isoeléctrico/elevación/descenso)</small>
+                        <select class="form-select" id="st">
+                            <option value="">Seleccione...</option>
+                            <option value="Isoeléctrico">Isoeléctrico</option>
+                            <option value="Elevación">Elevación</option>
+                            <option value="Descenso">Descenso</option>
+                        </select>
+                        <small class="form-text text-muted">Debe ser isoeléctrico; elevación o depresión sugiere isquemia o lesión.</small>
                     </div>
 
                     <div class="mb-3">
@@ -185,9 +210,7 @@
                                 <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_hvi"><label class="form-check-label" for="crit_hvi">HVI voltaje alto (Sokolow-Lyon) <span class="ms-1" data-bs-toggle="tooltip" title="S V1 + R V5/V6 ≥35 mm aprox.; alto voltaje.">ℹ️</span></label></div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_disociacion_av"><label class="form-check-label" for="crit_disociacion_av">Disociación AV (BAV completo) <span class="ms-1" data-bs-toggle="tooltip" title="P y QRS sin relación fija; marcapasos ventricular.">ℹ️</span></label></div>
-                                <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_pr_progresivo"><label class="form-check-label" for="crit_pr_progresivo">PR progresivo (Mobitz I), con una P que no conduce <span class="ms-1" data-bs-toggle="tooltip" title="Wenckebach: PR se alarga hasta bloqueo.">ℹ️</span></label></div>
-                                <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_pr_constante"><label class="form-check-label" for="crit_pr_constante">PR constante (Mobitz II), con una P que no conduce <span class="ms-1" data-bs-toggle="tooltip" title="PR fijo con P no conducida; más grave.">ℹ️</span></label></div>
+                                
                                 <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_onda_u"><label class="form-check-label" for="crit_onda_u">Onda U (Hipokalemia) <span class="ms-1" data-bs-toggle="tooltip" title="Pequeña onda tras T; típica de hipokalemia.">ℹ️</span></label></div>
                                 <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_t_picuda"><label class="form-check-label" for="crit_t_picuda">T picuda (Hiperkalemia) <span class="ms-1" data-bs-toggle="tooltip" title="T altas y estrechas; sugiere hiperkalemia.">ℹ️</span></label></div>
                                 <div class="form-check"><input class="form-check-input" type="checkbox" id="crit_brugada"><label class="form-check-label" for="crit_brugada">Patrón Brugada V1–V3 (ST convexo) <span class="ms-1" data-bs-toggle="tooltip" title="Elevación ST cóncava/convexa en V1–V3; patrón Brugada.">ℹ️</span></label></div>
@@ -220,7 +243,11 @@
                         </div>
                         <div id="resultadoSospecha" class="alert alert-info d-none"></div>
                         <div id="criteriosDetectados" class="small text-muted d-none"></div>
+                        <div id="sospechaImagen" class="mt-3"></div>
                     </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button type="button" id="limpiarFormulario" class="btn btn-outline-secondary btn-sm">Limpiar formulario</button>
                 </div>
             </div>
         </div>

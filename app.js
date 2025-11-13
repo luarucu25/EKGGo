@@ -73,6 +73,12 @@ document.addEventListener('DOMContentLoaded', function() {
         copiarInformeBtn.addEventListener('click', copiarInforme);
     }
 
+    // Botón de limpiar formulario (Lectura Guiada)
+    const limpiarFormularioBtn = document.getElementById('limpiarFormulario');
+    if (limpiarFormularioBtn) {
+        limpiarFormularioBtn.addEventListener('click', limpiarFormularioLG);
+    }
+
     // Sospecha diagnóstica ECG
     const generarSospechaBtn = document.getElementById('generarSospecha');
     const copiarSospechaBtn = document.getElementById('copiarSospecha');
@@ -201,6 +207,10 @@ function generarSospechaECG() {
     const qrs = parseFloat(document.getElementById('qrs')?.value);
     const stText = (document.getElementById('st')?.value || '').toLowerCase();
     const ondaTText = (document.getElementById('ondaT')?.value || '').toLowerCase();
+    const ondaPText = (document.getElementById('ondaP')?.value || '').toLowerCase();
+    const rrRegular = !!document.getElementById('rr_regular')?.checked;
+    const rrIrregular = !!document.getElementById('rr_irregular')?.checked;
+    const ondasFSierra = !!document.getElementById('ondas_f_sierra')?.checked;
     const leadsSel = Array.from(document.querySelectorAll('.lead-checkbox'))
         .filter(cb => cb.checked)
         .map(cb => cb.id.replace('lead_','').toUpperCase());
@@ -253,8 +263,54 @@ function generarSospechaECG() {
     }
 
     // Arritmias
-    if (ritmo.includes('no sinusal') && !isNaN(frecuencia) && frecuencia > 150 && !isNaN(qrs) && qrs < 120) {
-        addPick('Taquicardia supraventricular (TSV) probable', 4, 'No sinusal, FC >150, QRS estrecho');
+    if (ritmo.includes('no sinusal')) {
+        // Utilidad: RR irregular favorece FA; RR regular favorece Flutter/TSV
+        if (rrIrregular) {
+            let scoreFA = 5;
+            let reasonFA = 'No sinusal, RR irregular';
+            if (/ausent/.test(ondaPText)) { scoreFA += 1; reasonFA += ', onda P ausente'; }
+            addPick('Fibrilación auricular (FA) probable', scoreFA, reasonFA);
+        }
+        if (rrRegular) {
+            // Flutter altamente priorizado si hay ondas F (sierra)
+            if (ondasFSierra) {
+                let scoreFl = 5;
+                let reasonFl = 'No sinusal, RR regular, ondas F (sierra)';
+                if (!isNaN(frecuencia) && frecuencia >= 140 && frecuencia <= 170 && !isNaN(qrs) && qrs < 120) {
+                    scoreFl += 1; reasonFl += ', FC ~150, QRS estrecho';
+                }
+                addPick('Flutter auricular probable', scoreFl, reasonFl);
+            } else {
+                // Sin ondas F, aún considerar Flutter por FC ~150 con QRS estrecho
+                if (!isNaN(frecuencia) && frecuencia >= 140 && frecuencia <= 170 && !isNaN(qrs) && qrs < 120) {
+                    addPick('Flutter auricular probable', 4, 'No sinusal, RR regular, FC ~150 lpm, QRS estrecho');
+                }
+            }
+        }
+
+        // TSV: criterios flexibles y umbral de FC ≥150
+        // Suma puntos por: No sinusal, RR regular, FC ≥150, QRS <120, onda P ausente (oculta)
+        const tsvCriteria = [];
+        let tsvScore = 0;
+        if (ritmo.includes('no sinusal')) { tsvScore++; tsvCriteria.push('No sinusal'); }
+        if (rrRegular) { tsvScore++; tsvCriteria.push('RR regular'); }
+        if (!isNaN(frecuencia) && frecuencia >= 150) { tsvScore++; tsvCriteria.push('FC ≥150 lpm'); }
+        if (!isNaN(qrs) && qrs < 120) { tsvScore++; tsvCriteria.push('QRS estrecho (<120 ms)'); }
+        if (/ausent/.test(ondaPText)) { tsvScore++; tsvCriteria.push('Onda P oculta/ausente'); }
+        if (tsvScore >= 2) {
+            const scoreTSV = 4 + Math.min(tsvScore - 2, 2); // base 4, +1 o +2 según criterios extra
+            addPick('Taquicardia supraventricular (TSV) probable', scoreTSV, tsvCriteria.join(', '));
+        }
+        // Fallback heurístico si no se marcó RR
+        if (!rrRegular && !rrIrregular) {
+            if (/ausent/.test(ondaPText)) {
+                addPick('Fibrilación auricular (FA) probable', 4, 'No sinusal, onda P ausente');
+            }
+            if (!isNaN(frecuencia) && frecuencia >= 140 && frecuencia <= 170 && !isNaN(qrs) && qrs < 120) {
+                addPick('Flutter auricular probable', 3, 'No sinusal, FC ~150 lpm, QRS estrecho');
+            }
+            // TSV ya evaluada mediante puntuación flexible
+        }
     }
     // TV heuristic: QRS muy ancho + FC elevada + no sinusal
     if (!isNaN(qrs) && qrs >= 140 && (!isNaN(frecuencia) && frecuencia >= 120) && ritmo.includes('no sinusal')) {
@@ -291,8 +347,8 @@ function generarSospechaECG() {
 
     // WPW y AV blocks por checkboxes
     if (has('crit_pr_corto') || has('crit_onda_delta')) addPick('Preexcitación (WPW) probable', 4, 'PR corto/onda delta');
-    if (has('crit_pr_progresivo')) addPick('AV 2° Mobitz I (Wenckebach) probable', 4, 'PR progresivo con P no conducida');
-    if (has('crit_pr_constante')) addPick('AV 2° Mobitz II probable', 4, 'PR constante con P no conducida');
+    if (has('crit_pr_progresivo')) addPick('Bloqueo AV de segundo grado — Mobitz I (Wenckebach) probable', 4, 'PR progresivo con P no conducida');
+    if (has('crit_pr_constante')) addPick('Bloqueo AV de segundo grado — Mobitz II probable', 4, 'PR constante con P no conducida');
     if (has('crit_disociacion_av')) addPick('Bloqueo AV completo (3er grado)', 5, 'Disociación AV');
 
     // Checkboxes opcionales (sumar puntuación y razones)
@@ -305,8 +361,8 @@ function generarSospechaECG() {
     if (has('crit_v6_r_ancha')) addPick('Bloqueo de rama izquierda (BRI) probable', 2, 'V6 R alta ancha');
     if (has('crit_qrs_ancho')) addPick('Bloqueo de rama (QRS ≥120 ms)', 2, 'QRS ancho');
     if (has('crit_disociacion_av')) addPick('Bloqueo AV completo (3er grado)', 5, 'Disociación AV');
-    if (has('crit_pr_progresivo')) addPick('AV 2° Mobitz I (Wenckebach) probable', 4, 'PR progresivo con P no conducida');
-    if (has('crit_pr_constante')) addPick('AV 2° Mobitz II probable', 4, 'PR constante con P no conducida');
+    if (has('crit_pr_progresivo')) addPick('Bloqueo AV de segundo grado — Mobitz I (Wenckebach) probable', 4, 'PR progresivo con P no conducida');
+    if (has('crit_pr_constante')) addPick('Bloqueo AV de segundo grado — Mobitz II probable', 4, 'PR constante con P no conducida');
     if (has('crit_capturas_ventriculares')) addPick('Taquicardia ventricular (TV) probable', 4, 'Capturas ventriculares');
     if (has('crit_fusion')) addPick('Taquicardia ventricular (TV) probable', 4, 'Latidos de fusión');
     if (has('crit_concordancia_precordial')) addPick('Taquicardia ventricular (TV) probable', 3, 'Concordancia precordial');
@@ -337,7 +393,7 @@ function generarSospechaECG() {
         byScore[p.name] = (byScore[p.name] || 0) + p.score;
     });
     const sorted = Object.entries(byScore).sort((a,b) => b[1]-a[1]).map(([name]) => name);
-    const top = (sorted.length ? sorted.slice(0, 2) : ['ECG sin hallazgos concluyentes']);
+    const top = (sorted.length ? sorted.slice(0, 3) : ['ECG sin hallazgos concluyentes']);
 
     // Correlación clínica solo una vez al final
     const fraseCorrelacion = 'Correlacionar con historia clínica.';
@@ -352,16 +408,104 @@ function generarSospechaECG() {
         cont.classList.add('alert-info');
         cont.innerHTML = '<strong>Diagnóstico sugerido:</strong> ' + resultado.diagnostico_sugerido + '<br><strong>Comentario:</strong> ' + resultado.comentario;
     }
+    // Imagen ilustrativa del primer diagnóstico sugerido
+    const imgMap = [
+        { match: /fibrilaci[óo]n auricular/i, src: 'img/fa-12-lead.jpg', alt: 'Fibrilación auricular (12 derivaciones)' },
+        { match: /flutter auricular/i, src: 'img/flutter-12-lead.jpg', alt: 'Flutter auricular (12 derivaciones)' },
+        { match: /taquicardia supraventricular/i, src: 'img/tsv-12-lead.jpg', alt: 'Taquicardia supraventricular (12 derivaciones)' },
+        { match: /taquicardia ventricular/i, src: 'img/tv-12-lead.jpg', alt: 'Taquicardia ventricular (12 derivaciones)' },
+        { match: /infarto con elevaci[óo]n del st|stemi/i, src: 'img/stemi-12-lead.jpg', alt: 'STEMI (12 derivaciones)' },
+        { match: /isquemia subendoc[áa]rdica|nstemi/i, src: 'img/nstemi-12-lead.jpg', alt: 'NSTEMI / isquemia subendocárdica (12 derivaciones)' },
+        { match: /hiperkalemia/i, src: 'img/hiperkalemia.jpg', alt: 'Hiperkalemia' },
+        { match: /hipokalemia/i, src: 'img/hipokalemia.jpg', alt: 'Hipokalemia' },
+        { match: /hipertrofia ventricular izquierda|hvi/i, src: 'img/hvi-12-lead.jpg', alt: 'Hipertrofia ventricular izquierda (12 derivaciones)' },
+        { match: /bloqueo de rama derecha|brd/i, src: 'img/brd-12-lead.jpg', alt: 'Bloqueo de rama derecha (12 derivaciones)' },
+        { match: /bloqueo de rama izquierda|bri/i, src: 'img/bri-12-lead.jpg', alt: 'Bloqueo de rama izquierda (12 derivaciones)' },
+        { match: /bloqueo av de primer grado/i, src: 'img/bav1-12-lead.jpg', alt: 'Bloqueo AV de primer grado (12 derivaciones)' },
+        { match: /bloqueo av de segundo grado.*mobitz i|mobitz i/i, src: 'img/mobitz1-12-lead.PNG', alt: 'Bloqueo AV de segundo grado — Mobitz I (12 derivaciones)' },
+        { match: /bloqueo av de segundo grado.*mobitz ii|mobitz ii/i, src: 'img/mobitz2-12-lead.jpg', alt: 'Bloqueo AV de segundo grado — Mobitz II (12 derivaciones)' },
+        { match: /bloqueo av completo|3er grado/i, src: 'img/bav3-12-lead.jpg', alt: 'Bloqueo AV completo (12 derivaciones)' }
+    ];
+    const imgCont = document.getElementById('sospechaImagen');
+    if (imgCont) {
+        imgCont.innerHTML = '';
+        const primary = sorted[0] || '';
+        const entry = imgMap.find(e => e.match.test(primary));
+        if (entry) {
+            const html = `<img src="${entry.src}" alt="${entry.alt}" class="img-fluid rounded">`;
+            imgCont.innerHTML = html;
+        }
+    }
     const critEl = document.getElementById('criteriosDetectados');
     if (critEl) {
-        const reasons = Array.from(new Set(picks.map(p => p.reason).filter(Boolean)));
-        if (reasons.length) {
+        // Agrupar razones por diagnóstico para mostrarlas separadas
+        const reasonsByDx = {};
+        picks.forEach(p => {
+            if (!p || !p.name) return;
+            const reason = (p.reason || '').trim();
+            if (!reason) return;
+            if (!reasonsByDx[p.name]) reasonsByDx[p.name] = new Set();
+            reasonsByDx[p.name].add(reason);
+        });
+
+        const orderedDxNames = [];
+        if (sorted && Array.isArray(sorted)) {
+            sorted.forEach(name => {
+                if (reasonsByDx[name]) orderedDxNames.push(name);
+            });
+        }
+        // Incluir cualquier diagnóstico con razones que no estuviera en 'sorted'
+        Object.keys(reasonsByDx).forEach(name => {
+            if (!orderedDxNames.includes(name)) orderedDxNames.push(name);
+        });
+
+        if (orderedDxNames.length > 0) {
             critEl.classList.remove('d-none');
-            critEl.textContent = 'Criterios detectados: ' + reasons.join(', ');
+            const groupsHtml = orderedDxNames.map(name => {
+                const listItems = Array.from(reasonsByDx[name]).map(r => `<li>${r}</li>`).join('');
+                return `<div class="mb-1"><span class="fw-semibold">${name}:</span><ul class="mb-0 ps-3">${listItems}</ul></div>`;
+            }).join('');
+            critEl.innerHTML = `<div class="fw-semibold mb-1">Criterios detectados:</div>${groupsHtml}`;
         } else {
             critEl.classList.add('d-none');
-            critEl.textContent = '';
+            critEl.innerHTML = '';
         }
+    }
+}
+
+// Limpiar formulario y resultados en Lectura Guiada
+function limpiarFormularioLG() {
+    const form = document.getElementById('ecgForm');
+    if (form) {
+        // Reset de inputs y selects
+        Array.from(form.querySelectorAll('input, select')).forEach(el => {
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                el.checked = false;
+            } else {
+                el.value = '';
+            }
+        });
+    }
+    // Limpiar resultados y ocultar contenedores
+    const informeEl = document.getElementById('informeECG');
+    if (informeEl) {
+        informeEl.textContent = 'Complete el formulario y haga clic en "Generar informe" para ver el resultado.';
+    }
+    const sospechaEl = document.getElementById('resultadoSospecha');
+    if (sospechaEl) {
+        sospechaEl.classList.add('d-none');
+        sospechaEl.textContent = '';
+        sospechaEl.innerHTML = '';
+    }
+    const imgCont = document.getElementById('sospechaImagen');
+    if (imgCont) {
+        imgCont.innerHTML = '';
+    }
+    const critEl = document.getElementById('criteriosDetectados');
+    if (critEl) {
+        critEl.classList.add('d-none');
+        critEl.textContent = '';
+        critEl.innerHTML = '';
     }
 }
 
